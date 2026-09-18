@@ -38,11 +38,26 @@ Das PDF enthält nur den Arbeitsauftrag und verweist auf eine Markdown-Datei. Im
 
 Auf Amazon Linux wäre die einmalige Installation `sudo dnf install -y nginx rsync`. Das Setup für die neue GitHub-Instanz steht vollständig im Repository. nginx verwendet hier `/etc/nginx/nginx.conf` und liefert `/var/www/biztrips` auf Port 80 aus.
 
-## Prüfstand
+## Ergebnis und Nachweis
+
+![Verifizierte Ergebnisübersicht zu EX-01](docs/evidence/ex01-ergebnis.svg)
 
 - Lokal: drei App-Tests erfolgreich, Produktions-Build erfolgreich.
-- GitHub mit den neuen Änderungen: noch ausstehend.
-- Deployment und Browsernachweis: noch ausstehend.
+- GitHub: [Workflow 35315326239](https://github.com/AdminGodZ/bbw-m324-biztrips-actions-aws-ec2/actions/runs/35315326239) bei Commit `1d165ce`: Test, Build und Deploy erfolgreich.
+- Webseite: [http://54.196.10.102/](http://54.196.10.102/), HTTP 200.
+- HTML, CSS, beide JavaScript-Dateien, Logo und drei Reisebilder stimmen bytegenau mit dem lokalen Build überein.
+- Browser: Februar zeigt BT01, Januar zeigt keine Reise, Zurücksetzen zeigt alle drei Reisen. Keine erfassten Konsolenfehler oder Warnungen. Alle Bilder vollständig geladen.
+- Die bisherige GitLab-Instanz `i-05030c7e3c03d0e18` wurde nur lesend geprüft und nicht verändert.
+
+## Später erneut starten
+
+1. AWS Academy Learner Lab starten.
+2. Bei `biztrips-github` die aktuelle öffentliche IP prüfen. Nach einem Neustart kann sie wechseln.
+3. Bei geänderter IP das Environment-Secret `EC2_HOST` und bei Bedarf die Repository-Variable `VITE_API_BASE_URL` aktualisieren.
+4. In GitHub unter Actions den Workflow auf `main` starten.
+5. Nach einem grünen Lauf die Webseite unter der aktuellen IP öffnen.
+
+Die App verwendet feste Reisedaten. Ein Backend auf Port 3001 ist für diese erste Übung nicht eingerichtet und wird von der dargestellten Reiseübersicht nicht benötigt.
 
 ## Reflexion
 

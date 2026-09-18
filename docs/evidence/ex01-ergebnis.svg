@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="460" viewBox="0 0 1120 460">
+<rect width="1120" height="460" rx="18" fill="#f6f8fa"/>
+<g font-family="Arial, sans-serif" fill="#1f2937">
+<text x="44" y="55" font-size="25" font-weight="700">Tim Held · M324 · EX-01</text>
+<text x="44" y="89" font-size="18">GitHub Actions → eigene AWS-EC2-Instanz</text>
+<text x="44" y="121" font-size="15" fill="#586069">Verifizierte Ergebnisübersicht vom 18.09.2026 · kein Bildschirmfoto</text>
+<g fill="#e8f5ec" stroke="#2da44e" stroke-width="2">
+<rect x="44" y="156" width="300" height="115" rx="10"/>
+<rect x="410" y="156" width="300" height="115" rx="10"/>
+<rect x="776" y="156" width="300" height="115" rx="10"/>
+</g>
+<g font-size="23" font-weight="700" fill="#176d32">
+<text x="70" y="193">✓ Test erfolgreich</text><text x="436" y="193">✓ Build erfolgreich</text><text x="802" y="193">✓ Deploy erfolgreich</text>
+</g>
+<g font-size="17"><text x="70" y="229">3 Tests der Reiseanzeige</text><text x="436" y="229">Vite-Build als dist-Artefakt</text><text x="802" y="229">SSH / rsync → nginx</text></g>
+<g font-size="28" fill="#57606a"><text x="365" y="222">→</text><text x="731" y="222">→</text></g>
+<g font-size="17">
+<text x="44" y="313">Repository: AdminGodZ/bbw-m324-biztrips-actions-aws-ec2</text>
+<text x="44" y="345">Workflow: 35315326239 · Commit: 1d165ce · Status: success</text>
+<text x="44" y="377">EC2: biztrips-github · i-05d176764e9006549 · http://54.196.10.102/</text>
+<text x="44" y="409">Browser: Februar, Januar, alle Reisen geprüft · 8 ausgelieferte Dateien stimmen mit dem Build überein</text>
+</g></g></svg>

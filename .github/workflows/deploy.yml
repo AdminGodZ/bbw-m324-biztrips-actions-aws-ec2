@@ -7,6 +7,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ec2-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   NODE_VERSION: '24'
 
@@ -62,6 +69,10 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     environment: production
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
     steps:
       - name: Build-Artefakt herunterladen
         uses: actions/download-artifact@v4
@@ -71,24 +82,32 @@ jobs:
 
       - name: SSH-Key einrichten
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          set -euo pipefail
+          for name in EC2_HOST EC2_USER EC2_SSH_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret $name fehlt im Environment production."
+              exit 1
+            fi
+          done
+          install -m 700 -d ~/.ssh
+          umask 077
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/deploy_key
+          ssh-keyscan -T 15 -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
       - name: Dateien auf EC2 übertragen
         run: |
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/deploy_key" \
             dist/ \
-            "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/biztrips-build/"
+            "${EC2_USER}@${EC2_HOST}:/tmp/biztrips-build/"
 
       - name: Auf EC2 veröffentlichen
         run: |
-          ssh -T -i ~/.ssh/deploy_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" '
+          ssh -T -i ~/.ssh/deploy_key "${EC2_USER}@${EC2_HOST}" '
             set -euo pipefail
             sudo mkdir -p /var/www/biztrips
             sudo rsync -a --delete /tmp/biztrips-build/ /var/www/biztrips/
+            sudo nginx -t
             sudo systemctl reload nginx
             rm -rf /tmp/biztrips-build
           ' < /dev/null
@@ -96,35 +115,3 @@ jobs:
       - name: SSH-Key entfernen
         if: always()
         run: rm -f ~/.ssh/deploy_key
-
-  docker:
-    name: Docker-Image bauen und auf Docker Hub veröffentlichen
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Bei Docker Hub anmelden
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Buildx einrichten
-        uses: docker/setup-buildx-action@v3
-
-      # Tagging-Strategie: prod01 (aktuell auf Produktion deployt), latest (letzter
-      # erfolgreicher Build) und die Git-Kurz-SHA (unveränderliche Referenz je Commit).
-      - name: Image bauen und pushen
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          build-args: |
-            VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}
-            VITE_IMGS=${{ vars.VITE_IMGS || 'items' }}
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/biztrips:prod01
-            ${{ secrets.DOCKERHUB_USERNAME }}/biztrips:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/biztrips:${{ github.sha }}
